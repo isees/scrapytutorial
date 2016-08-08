@@ -1,0 +1,9 @@
+Test
+
+Is is really work?
+
+
+
+Let's have a try.
+
+D:/workspace/python/scrapytutorial/text/functions_and_files.txt
