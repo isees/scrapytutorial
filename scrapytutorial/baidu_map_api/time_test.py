@@ -3,7 +3,7 @@ import datetime
 
 thatDay = datetime.datetime.strptime('2016-08-13', '%Y-%m-%d')
 
-for days in range(5):
+for days in range(8):
     currentDay = thatDay + datetime.timedelta(days=days)
     days += 1
     timeArray = time.mktime(currentDay.timetuple())
