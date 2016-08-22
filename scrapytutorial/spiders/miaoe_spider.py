@@ -16,8 +16,8 @@ file_path = '../../doc/' + dir_name + '/supplier_list.json'
 save_path = "../../doc/" + dir_name + "/saved_info.txt"
 # saved_file = open(save_path, 'wb')
 
-area_list = [{"code": "44", "name": "广东省"}, {"code": "45", "name": "广西省"}, {"code": "12", "name": "天津市"},
-             {"code": "53", "name": "云南省"}, {"code": "13", "name": "河北省"}, {"code": "14", "name": "山西省"},
+area_list = [{"code": "44", "name": "广东省"}, {"code": "53", "name": "云南省"}, {"code": "45", "name": "广西省"},
+             {"code": "13", "name": "河北省"}, {"code": "14", "name": "山西省"}, {"code": "12", "name": "天津市"},
              {"code": "15", "name": "内蒙古"}, {"code": "11", "name": "北京市"}, {"code": "35", "name": "福建省"},
              {"code": "37", "name": "山东省"}, {"code": "31", "name": "上海市"}, {"code": "32", "name": "江苏省"},
              {"code": "33", "name": "浙江省"}, {"code": "34", "name": "安徽省"}, {"code": "46", "name": "海南省"},
@@ -61,7 +61,7 @@ def get_province_list(index=0):
     #     print json.dumps(area, ensure_ascii=False, encoding='utf-8')
 
 
-def get_next_param(currentIndex, area, code):
+def get_next_param(currentIndex, area='', code=''):
     param = {
         # "searchName": "",
         # "name": "",
@@ -82,8 +82,10 @@ def get_index_info():
         code = area['code']
         name = area['name']
 
+        print name, code
+
         for index in range(0, 1):
-            response = requests.post(url, params=get_next_param(index, area, code), headers=headers)
+            response = requests.post(url, params=get_next_param(index, name, code), headers=headers)
             soup = BeautifulSoup(response.content, 'html.parser')
             list = soup.find(class_='wxinq-list').find_all(class_='row')
 
@@ -93,7 +95,6 @@ def get_index_info():
                     continue
                 else:
                     shop_id_cache.append(shopIcon)
-
                 name = row.find(class_='hdLinkman').get('value')
                 mobile = row.find(class_='hdMobile').get('value')
                 hdArea = row.find(class_='hdArea').get('value')
@@ -101,22 +102,27 @@ def get_index_info():
                 shopIcon = row.find(class_='shopIcon').get('data-id')
                 authIcon = row.find(class_='auth-icon').string
                 print shopIcon, name, mobile, hdArea, companyName, authIcon
-                # get_shop_list(shopIcon)
+                remark_array = get_shop_list(shopIcon)
+                print json.dumps(remark_array, ensure_ascii=False, encoding='utf-8')
 
 
 def get_shop_list(shop_id, current_index=0):
+    remark_array = []
     url = shop_list_url.replace('[shop_id]', shop_id)
+    print current_index
     response = requests.post(url, params=get_next_param(current_index), headers=headers)
     soup = BeautifulSoup(response.content, 'html.parser')
     list = soup.find(class_='wxinq-list').find_all(class_='row')
     for row in list:
         business = row.find(class_='hdRemark').get('value')
-        print business
+        remark_array.append(business)
 
     paging = soup.find(class_='paging')
     if paging.find(class_='btnNext') != None and 'disabled' not in paging.find(class_='btnNext')['class']:
         current_index += 1
-        get_shop_list(shop_id, current_index)
+        remark_array += get_shop_list(shop_id, current_index)
+
+    return remark_array
 
 
 get_index_info()
