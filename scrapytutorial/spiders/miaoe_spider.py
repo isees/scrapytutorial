@@ -96,14 +96,15 @@ def get_index_info():
                 else:
                     shop_id_cache.append(shopIcon)
                 name = row.find(class_='hdLinkman').get('value')
+                authIcon = row.find(class_='auth-icon').string
                 mobile = row.find(class_='hdMobile').get('value')
                 hdArea = row.find(class_='hdArea').get('value')
                 companyName = row.find(class_='companyName').get('value')
                 shopIcon = row.find(class_='shopIcon').get('data-id')
-                authIcon = row.find(class_='auth-icon').string
-                print shopIcon, name, mobile, hdArea, companyName, authIcon
-                remark_array = get_shop_list(shopIcon)
-                print json.dumps(remark_array, ensure_ascii=False, encoding='utf-8')
+                hdRemark = row.find(class_='hdRemark').get('value')
+                print shopIcon, name, authIcon, mobile, hdArea, companyName, hdRemark
+                # remark_array = get_shop_list(shopIcon)
+                # print json.dumps(remark_array, ensure_ascii=False, encoding='utf-8')
 
 
 def get_shop_list(shop_id, current_index=0):
