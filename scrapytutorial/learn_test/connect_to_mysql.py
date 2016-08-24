@@ -10,15 +10,15 @@ def get_current_timestamp():
 
 
 config = {
-    'user': 'root',
+    'user': 'bain',
     'password': 'SniperX4',
     'host': '127.0.0.1',
     'database': 'flower_scrapy'
 }
+cnx = mysql.connector.connect(**config)
+cursor = cnx.cursor()
 
 try:
-    cnx = mysql.connector.connect(**config)
-    cursor = cnx.cursor()
 
     add_shop_info = (
         "INSERT INTO raw_data (unique_tag, supplier_name, supplier_phone, area, "
@@ -26,7 +26,7 @@ try:
 
     data_shop_info = (
         '86a358fa3f3041a2abd992169d3e10f3', '刘永乾', '13503226209', '河北省', '河北省保定市', '华谊园林', 0, '梅花树推广基地',
-        int(get_current_timestamp()))
+        get_current_timestamp())
 
     cursor.execute(add_shop_info, data_shop_info)
     cnx.commit()
