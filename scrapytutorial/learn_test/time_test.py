@@ -23,4 +23,5 @@ def int_to_time(ten_digit_number):
 
 date = int_to_time(1471536000)
 print '1471536000 >> %r' % date
+print 'Current timestamp >> %r' % get_current_timestamp()
 print 'Current time >> %r' % int_to_time(get_current_timestamp())

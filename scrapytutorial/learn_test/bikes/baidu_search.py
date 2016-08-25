@@ -2,9 +2,25 @@
 
 import requests
 from bs4 import BeautifulSoup
+import time
 
-search_word = "奢侈 速降 山地车"
-search_list_url = 'https://www.baidu.com/s?&wd=%s&gpc=stf%3D1469447105%2C1472125505%7Cstftype%3D1' % search_word
+
+def get_current_timestamp():
+    return int(round(time.time()))
+
+
+search_word = "山地车 吴彦祖"
+now_time = get_current_timestamp()
+one_year_ago = now_time - 366 * 24 * 3600
+one_month_ago = now_time - 31 * 24 * 3600
+one_week_ago = now_time - 7 * 24 * 3600
+last_24_hour = now_time - 24 * 3600
+
+print now_time, one_year_ago
+
+search_list_url = 'https://www.baidu.com/s?wd=%s&gpc=stf%%3D%d%%2C%d%%7Cstftype%%3D1' % (
+    search_word, one_month_ago, now_time)
+print search_list_url
 
 headers = {
     # "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -22,6 +38,6 @@ headers = {
 result = requests.get(search_list_url, headers=headers)
 html = result.content
 soup = BeautifulSoup(html, 'html.parser')
-for group in soup.find(id='content_left').find_all("div", class_="result"):
-    print group
-
+if soup.find(id='content_left') != None:
+    for group in soup.find(id='content_left').find_all("div", class_="result"):
+        print group
