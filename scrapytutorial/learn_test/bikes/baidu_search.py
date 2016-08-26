@@ -3,24 +3,30 @@
 import requests
 from bs4 import BeautifulSoup
 import time
+import json
+import hashlib
 
 
 def get_current_timestamp():
     return int(round(time.time()))
 
 
-search_word = "ionic 速成"
+search_word = "ionic 教程"
 now_time = get_current_timestamp()
 one_year_ago = now_time - 366 * 24 * 3600
 one_month_ago = now_time - 31 * 24 * 3600
 one_week_ago = now_time - 7 * 24 * 3600
 last_24_hour = now_time - 24 * 3600
 
-print now_time, one_year_ago
+print now_time - one_year_ago
 
-search_list_url = 'https://www.baidu.com/s?wd=%s&gpc=stf%%3D%d%%2C%d%%7Cstftype%%3D1' % (
-    search_word, one_month_ago, now_time)
+search_list_url = 'https://www.baidu.com/s?wd=%s' % search_word
+search_date_param = '&gpc=stf%%3D%d%%2C%d%%7Cstftype%%3D1' % (one_year_ago, now_time)
+
+search_list_url += search_date_param
+
 print search_list_url
+print '#######################################################\n'
 
 headers = {
     # "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
@@ -40,4 +46,13 @@ html = result.content
 soup = BeautifulSoup(html, 'html.parser')
 if soup.find(id='content_left') != None:
     for group in soup.find(id='content_left').find_all("div", class_="result"):
-        print group
+        # print json.dumps(group.h3.a.contents, ensure_ascii=False)
+        title = group.h3.a.text
+        unique_id = hashlib.md5(title.encode('utf-8')).hexdigest()
+        href = group.h3.a.get("href")
+        abstract = group.find("div", class_='c-abstract')
+        str = unique_id+ " >> " +title + ' >> ' + href
+        if abstract != None:
+            str += '\n::' + abstract.text
+
+        print str + '\n'
