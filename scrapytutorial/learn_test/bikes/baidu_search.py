@@ -9,7 +9,7 @@ def get_current_timestamp():
     return int(round(time.time()))
 
 
-search_word = "山地车 吴彦祖"
+search_word = "ionic 速成"
 now_time = get_current_timestamp()
 one_year_ago = now_time - 366 * 24 * 3600
 one_month_ago = now_time - 31 * 24 * 3600
