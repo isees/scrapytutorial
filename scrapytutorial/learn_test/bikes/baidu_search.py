@@ -11,6 +11,17 @@ def get_current_timestamp():
     return int(round(time.time()))
 
 
+headers = {
+    "Upgrade-Insecure-Requests": 1,
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36"
+}
+
+
+def get_real_url(search_url):
+    response = requests.get(search_url)
+    return response.url
+
+
 search_word = "ionic 教程"
 now_time = get_current_timestamp()
 one_year_ago = now_time - 366 * 24 * 3600
@@ -48,11 +59,10 @@ if soup.find(id='content_left') != None:
     for group in soup.find(id='content_left').find_all("div", class_="result"):
         # print json.dumps(group.h3.a.contents, ensure_ascii=False)
         title = group.h3.a.text
-        unique_id = hashlib.md5(title.encode('utf-8')).hexdigest()
-        href = group.h3.a.get("href")
+        href = get_real_url(group.h3.a.get("href"))
+        unique_id = hashlib.md5(href.encode('utf-8')).hexdigest()
         abstract = group.find("div", class_='c-abstract')
-        str = unique_id+ " >> " +title + ' >> ' + href
-        if abstract != None:
+        str = unique_id + " >> " + title + ' >> ' + href
+        if abstract is not None:
             str += '\n::' + abstract.text
-
         print str + '\n'
