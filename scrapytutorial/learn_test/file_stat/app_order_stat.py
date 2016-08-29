@@ -42,12 +42,12 @@ def get_shop_count(file_path):
     return app_shop_count
 
 
-all_order_file = 'C:\Users\Bain\Desktop\\app订单.txt'
-app_shop_list = get_shop_count(all_order_file)
+app_order_file = 'C:\Users\Bain\Desktop\\app订单.txt'
+app_shop_list = get_shop_count(app_order_file)
+all_app_order = open('D:\workspace\python\scrapytutorial\doc\\active_user_stat\\app_order_stat.txt', 'rb')
 
-all_order = open('D:\workspace\python\scrapytutorial\doc\\active_user_stat\\app_order_stat.txt', 'rb')
 month_array = month_array.get_and_print_month_array('201509', 12)
-for shop in all_order:
+for shop in all_app_order:
     shop_name = shop.split('\t')[0]
     month_count = app_shop_list[shop_name]
     shop_month_count_str = ''

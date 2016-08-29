@@ -1,5 +1,6 @@
 import time
 import datetime
+from time import gmtime, strftime
 
 thatDay = datetime.datetime.strptime('2016-08-13', '%Y-%m-%d')
 
@@ -25,3 +26,6 @@ date = int_to_time(1471536000)
 print '1471536000 >> %r' % date
 print 'Current timestamp >> %r' % get_current_timestamp()
 print 'Current time >> %r' % int_to_time(get_current_timestamp())
+print strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
+print strftime("%Y-%m-%d %H:%M:%S", gmtime())
+print time.strftime('%Y-%m-%d %H:%M:%S')
