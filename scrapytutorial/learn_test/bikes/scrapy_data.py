@@ -4,18 +4,18 @@ import mysql.connector
 from mysql.connector import errorcode
 import time
 
-# config = {
-#     'user': 'soogic',
-#     'password': 'SniperX4',
-#     'host': '192.168.1.200',
-#     'database': 'scrapy'
-# }
 config = {
-    'user': 'root',
+    'user': 'soogic',
     'password': 'SniperX4',
-    'host': 'localhost',
+    'host': '192.168.1.200',
     'database': 'scrapy'
 }
+# config = {
+#     'user': 'root',
+#     'password': 'SniperX4',
+#     'host': 'localhost',
+#     'database': 'scrapy'
+# }
 
 
 def get_current_timestamp():

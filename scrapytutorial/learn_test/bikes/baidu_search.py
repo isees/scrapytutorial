@@ -9,6 +9,7 @@ import scrapy_data
 import send_email
 import random
 import sys
+from  baidu_hot import get_hot_start_list
 
 reload(sys)
 sys.setdefaultencoding("utf-8")
@@ -77,25 +78,29 @@ def save_searched_content(keywords, include_word, date_type):
     if soup.find(id='content_left') is not None:
         for group in soup.find(id='content_left').find_all("div", class_="result"):
             # print json.dumps(group.h3.a.contents, ensure_ascii=False)
-            title = group.h3.a.text
-            url = get_real_url(group.h3.a.get("href"))
-            url_md5 = hashlib.md5(url.encode('utf-8')).hexdigest()
-            title_md5 = hashlib.md5(title.encode('utf-8')).hexdigest()
-            abstract = group.find("div", class_='c-abstract').text
+            try:
+                title = group.h3.a.text
+                url = get_real_url(group.h3.a.get("href"))
+                url_md5 = hashlib.md5(url.encode('utf-8')).hexdigest()
+                title_md5 = hashlib.md5(title.encode('utf-8')).hexdigest()
+                abstract = group.find("div", class_='c-abstract').text
 
-            if include_word not in title and include_word not in abstract:
+                if include_word not in title and include_word not in abstract:
+                    continue
+
+                if url_md5 not in url_md5_list and title_md5 not in url_md5_list:
+                    url_md5_list.append(url_md5)
+                    url_md5_list.append(title_md5)
+
+                    print title
+                    print abstract
+                    print url
+                    print '\n'
+
+                    scrapy_data.save(url_md5, title_md5, title, abstract, url, 0)
+            except Exception, err:
+                print err.message
                 continue
-
-            status = 0
-            create_time = int(round(time.time()))
-
-            print url_md5, title_md5
-            print title, status
-            print abstract
-            print create_time, url
-            print '\n'
-            if url_md5 not in url_md5_list and title_md5 not in url_md5_list:
-                scrapy_data.save(url_md5, title_md5, title, abstract, url, status)
 
 
 def group_email_info(title, abstract, url):
@@ -114,12 +119,27 @@ def get_email_content():
         abstract = info[1]
         url = info[2]
         email_content += group_email_info(title, abstract, url)
-    # print email_content
     return email_content
 
 
-save_searched_content('成毅 骑行', '骑行', one_year_ago)
-# subject = "%s" % str(int(round(time.time())))
-# content = get_email_content()
-# destination = 'soogicspider@yeah.net'
-# send_email.send_mail(subject, content, destination)
+# save_searched_content('成毅 骑行', '骑行', one_year_ago)
+subject = "%s" % str(int(round(time.time())))
+content = get_email_content()
+destination = 'soogicspider@yeah.net'
+send_email.send_mail(subject, content, destination)
+
+
+def get_keyword_list(file_path):
+    words = []
+    word_file = open(file_path)
+    for line in word_file:
+        words.append(line.strip())
+    return words
+
+
+# keywords = get_keyword_list('D:\workspace\python\scrapytutorial\doc\soogic\keywords')
+# hot_words = set(get_keyword_list('D:\workspace\python\scrapytutorial\doc\soogic\hotwords') + get_hot_start_list())
+#
+# for hotword in hot_words:
+#     for keyword in keywords:
+#         save_searched_content('%s %s' % (hotword, keyword), keyword, one_year_ago)

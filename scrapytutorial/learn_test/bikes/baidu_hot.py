@@ -31,11 +31,11 @@ def get_hot_list(url):
     return hot_person_list
 
 
-hot_person = 'http://top.baidu.com/buzz?b=258'
-hot_fun = 'http://top.baidu.com/buzz?b=618'
+def get_hot_start_list():
+    hot_person = 'http://top.baidu.com/buzz?b=258'
+    hot_fun = 'http://top.baidu.com/buzz?b=618'
 
-person_list = get_hot_list(hot_person)
-fun_list = get_hot_list(hot_fun)
+    person_list = get_hot_list(hot_person)
+    fun_list = get_hot_list(hot_fun)
 
-list = set(person_list + fun_list)
-print json.dumps(person_list, ensure_ascii=False)
+    return list(set(person_list + fun_list))
