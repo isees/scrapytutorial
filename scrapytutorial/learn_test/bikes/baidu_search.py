@@ -159,5 +159,11 @@ def send_email():
         print err.message
 
 
+def confirm_sended():
+    # todo:
+    pass
+
+
 # search_and_save()
 send_email()
+confirm_sended()

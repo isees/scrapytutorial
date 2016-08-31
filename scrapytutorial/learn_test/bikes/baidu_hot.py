@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import requests
-import json
 from bs4 import BeautifulSoup
 
 
@@ -15,14 +14,13 @@ def get_response(search_url):
 
 def get_hot_list(url):
     response = get_response(url)
-    html = response.content
-    soup = BeautifulSoup(html, 'html.parser')
+    soup = BeautifulSoup(response.content, 'html.parser')
     main_body = soup.find(class_='mainBody')
     hot_person_list = []
     if main_body is not None:
         i = 0
         for group in main_body.find_all("a", class_="list-title"):
-            if i > 5:
+            if i > 10:
                 break
             i += 1
             name = group.text.strip()
