@@ -11,7 +11,6 @@ config = {
     'database': 'scrapy'
 }
 
-
 # config = {
 #     'user': 'root',
 #     'password': 'SniperX4',
@@ -20,8 +19,23 @@ config = {
 # }
 
 
+source_dict = {
+    1: "baidu",
+    2: "yahoo"
+}
+
+
 def get_current_timestamp():
     return int(round(time.time()))
+
+
+def get_keyword_list(file_path):
+    words = []
+    word_file = open(file_path)
+    for line in word_file:
+        if line.strip() != "":
+            words.append(line.strip())
+    return words
 
 
 def get_all_url_md5():
@@ -48,17 +62,36 @@ def get_all_url_md5():
         cnx.close()
 
 
-def save(url_md5, title_md5, title, abstract, url, keyword, hot_word, status):
+def save(url_md5, title_md5, title, abstract, url, keyword, hot_word, status, source):
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
     try:
         add_data_param = (
             "INSERT INTO scrapy (url_md5, title_md5, title, abstract, "
-            "url, keyword, hotword, status, create_time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)")
+            "url, keyword, hotword, status, source, create_time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
         data_param = (
-            url_md5, title_md5, title, abstract, url, keyword, hot_word, status, get_current_timestamp())
+            url_md5, title_md5, title, abstract, url, keyword, hot_word, status, source, get_current_timestamp())
 
         cursor.execute(add_data_param, data_param)
+        cnx.commit()
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Something is wrong with your user name or password")
+        elif err.errno == errorcode.ER_BAD_DB_ERROR:
+            print("Database does not exist")
+        else:
+            print(err)
+    finally:
+        cursor.close()
+        cnx.close()
+
+
+def udpate_status(source):
+    cnx = mysql.connector.connect(**config)
+    cursor = cnx.cursor()
+    try:
+        update_sql = ("update scrapy set status=1 where status=0 and source=%d" % source)
+        cursor.execute(update_sql)
         cnx.commit()
     except mysql.connector.Error as err:
         if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
@@ -75,7 +108,7 @@ def save(url_md5, title_md5, title, abstract, url, keyword, hot_word, status):
 def get_email_content():
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
-    query = 'select title, abstract, url, keyword, hotword from scrapy.scrapy where status=0'
+    query = 'select title, abstract, url, keyword, hotword, source from scrapy.scrapy where status=0'
     try:
         cursor.execute(query)
         result_set = cursor.fetchall()
@@ -90,3 +123,25 @@ def get_email_content():
     finally:
         cursor.close()
         cnx.close()
+
+
+def group_email_info(title, abstract, url, keyword, hotword, source):
+    content = "\r\n"
+    content += '%s [%s %s] - %s\r\n' % (title, keyword, hotword, source_dict[source])
+    content += "        " + abstract + "\r\n"
+    content += "        " + url + "\r\n"
+    return content
+
+
+def assemble_content():
+    email_content = ""
+    rs = get_email_content()
+    for info in rs:
+        title = info[0]
+        abstract = info[1]
+        url = info[2]
+        keyword = info[3]
+        hotword = info[4]
+        source = info[5]
+        email_content += group_email_info(title, abstract, url, keyword, hotword, source)
+    return email_content

@@ -5,8 +5,8 @@ from bs4 import BeautifulSoup
 import time
 import json
 import hashlib
-import scrapy_data
-import send_email as  sender
+import scrapy_data as sd
+import email_controller as  sender
 import random
 import sys
 from  baidu_hot import get_hot_start_list
@@ -18,6 +18,11 @@ one_year_ago = 1
 one_month_ago = 2
 one_week_ago = 3
 last_24_hour = 4
+
+source_dict = {
+    1: "百度",
+    2: "yahoo"
+}
 
 
 def get_current_timestamp():
@@ -67,13 +72,13 @@ headers = {
 }
 
 
-def save_searched_content(keyword, hot_word, date_type):
+def save_searched_content(keyword, hot_word, date_type, source=1):
     search_url = generate_search_url('%s %s' % (hot_word, keyword), date_type)
     result = requests.get(search_url, headers=headers)
     html = result.content
     soup = BeautifulSoup(html, 'html.parser')
 
-    url_md5_list = scrapy_data.get_all_url_md5()
+    url_md5_list = sd.get_all_url_md5()
 
     if soup.find(id='content_left') is not None:
         for group in soup.find(id='content_left').find_all("div", class_="result"):
@@ -104,66 +109,20 @@ def save_searched_content(keyword, hot_word, date_type):
                 print url
                 print '\n'
 
-                scrapy_data.save(url_md5, title_md5, title, abstract, url, keyword, hot_word, 0)
+                sd.save(url_md5, title_md5, title, abstract, url, keyword, hot_word, 0, 1)
             except Exception, err:
                 print err.message
                 continue
 
 
-def group_email_info(title, abstract, url, keyword, hotword):
-    content = "\r\n"
-    content += '%s [%s %s]\r\n' % (title, keyword, hotword)
-    content += "        " + abstract + "\r\n"
-    content += "        " + url + "\r\n"
-    return content
-
-
-def get_email_content():
-    email_content = ""
-    rs = scrapy_data.get_email_content()
-    for info in rs:
-        title = info[0]
-        abstract = info[1]
-        url = info[2]
-        keyword = info[3]
-        hotword = info[4]
-        email_content += group_email_info(title, abstract, url, keyword, hotword)
-    return email_content
-
-
-def get_keyword_list(file_path):
-    words = []
-    word_file = open(file_path)
-    for line in word_file:
-        if line.strip() != "":
-            words.append(line.strip())
-    return words
-
-
 def search_and_save():
-    keywords = get_keyword_list('D:\workspace\python\scrapytutorial\doc\soogic\keywords')
-    hot_words = set(get_keyword_list('D:\workspace\python\scrapytutorial\doc\soogic\hotwords') + get_hot_start_list())
+    keywords = sd.get_keyword_list('D:\workspace\python\scrapytutorial\doc\soogic\keywords')
+    hot_words = set(
+        sd.get_keyword_list('D:\workspace\python\scrapytutorial\doc\soogic\hotwords') + get_hot_start_list())
     for hot_word in hot_words:
         for keyword in keywords:
             save_searched_content(keyword, hot_word, one_year_ago)
 
 
-def send_email():
-    subject = "%s" % str(int(round(time.time())))
-    content = get_email_content()
-    destination = 'soogicspider@yeah.net'
-    try:
-        sender.send_mail(subject, content, destination)
-        print '%s send successfully :)' % subject
-    except Exception, err:
-        print err.message
+search_and_save()
 
-
-def confirm_sended():
-    # todo:
-    pass
-
-
-# search_and_save()
-send_email()
-confirm_sended()
