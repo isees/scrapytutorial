@@ -10,6 +10,8 @@ config = {
     'host': '192.168.1.200',
     'database': 'scrapy'
 }
+
+
 # config = {
 #     'user': 'root',
 #     'password': 'SniperX4',
@@ -46,15 +48,15 @@ def get_all_url_md5():
         cnx.close()
 
 
-def save(url_md5, title_md5, title, abstract, url, status):
+def save(url_md5, title_md5, title, abstract, url, keyword, hot_word, status):
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
     try:
         add_data_param = (
             "INSERT INTO scrapy (url_md5, title_md5, title, abstract, "
-            "url, status, create_time) VALUES (%s, %s, %s, %s, %s, %s, %s)")
+            "url, keyword, hotword, status, create_time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)")
         data_param = (
-            url_md5, title_md5, title, abstract, url, status, get_current_timestamp())
+            url_md5, title_md5, title, abstract, url, keyword, hot_word, status, get_current_timestamp())
 
         cursor.execute(add_data_param, data_param)
         cnx.commit()
@@ -73,7 +75,7 @@ def save(url_md5, title_md5, title, abstract, url, status):
 def get_email_content():
     cnx = mysql.connector.connect(**config)
     cursor = cnx.cursor()
-    query = 'select title, abstract, url from scrapy.scrapy where status=0'
+    query = 'select title, abstract, url, keyword, hotword from scrapy.scrapy where status=0'
     try:
         cursor.execute(query)
         result_set = cursor.fetchall()

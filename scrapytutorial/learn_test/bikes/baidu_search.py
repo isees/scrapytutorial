@@ -6,7 +6,7 @@ import time
 import json
 import hashlib
 import scrapy_data
-import send_email
+import send_email as  sender
 import random
 import sys
 from  baidu_hot import get_hot_start_list
@@ -36,10 +36,10 @@ def get_date_type_value(now_time, date_type=0):
 
 def get_real_url(search_url):
     try:
-        response = requests.get(search_url)
+        response = requests.get(search_url, timeout=15)
         return response.url
-    except requests.exceptions.RequestException as e:  # This is the correct syntax
-        pass
+    except Exception, err:  # This is the correct syntax
+        print err.message
     return search_url
 
 
@@ -67,8 +67,8 @@ headers = {
 }
 
 
-def save_searched_content(keywords, include_word, date_type):
-    search_url = generate_search_url(keywords, date_type)
+def save_searched_content(keyword, hot_word, date_type):
+    search_url = generate_search_url('%s %s' % (hot_word, keyword), date_type)
     result = requests.get(search_url, headers=headers)
     html = result.content
     soup = BeautifulSoup(html, 'html.parser')
@@ -80,32 +80,39 @@ def save_searched_content(keywords, include_word, date_type):
             # print json.dumps(group.h3.a.contents, ensure_ascii=False)
             try:
                 title = group.h3.a.text
-                url = get_real_url(group.h3.a.get("href"))
-                url_md5 = hashlib.md5(url.encode('utf-8')).hexdigest()
                 title_md5 = hashlib.md5(title.encode('utf-8')).hexdigest()
                 abstract = group.find("div", class_='c-abstract').text
 
-                if include_word not in title and include_word not in abstract:
+                if hot_word not in title and hot_word not in abstract:
+                    print '%s not found' % hot_word
                     continue
 
-                if url_md5 not in url_md5_list and title_md5 not in url_md5_list:
-                    url_md5_list.append(url_md5)
-                    url_md5_list.append(title_md5)
+                if title_md5 in url_md5_list:
+                    print '<<%s>> exists' % title
+                    continue
+                url_md5_list.append(title_md5)
 
-                    print title
-                    print abstract
-                    print url
-                    print '\n'
+                url = get_real_url(group.h3.a.get("href"))
+                url_md5 = hashlib.md5(url.encode('utf-8')).hexdigest()
+                if url_md5 in url_md5_list:
+                    print '"%s" exists' % url
+                    continue
+                url_md5_list.append(url_md5)
 
-                    scrapy_data.save(url_md5, title_md5, title, abstract, url, 0)
+                print title, ' [%s %s]' % (keyword, hot_word)
+                print abstract
+                print url
+                print '\n'
+
+                scrapy_data.save(url_md5, title_md5, title, abstract, url, keyword, hot_word, 0)
             except Exception, err:
                 print err.message
                 continue
 
 
-def group_email_info(title, abstract, url):
+def group_email_info(title, abstract, url, keyword, hotword):
     content = "\r\n"
-    content += title + "\r\n"
+    content += '%s [%s %s]\r\n' % (title, keyword, hotword)
     content += "        " + abstract + "\r\n"
     content += "        " + url + "\r\n"
     return content
@@ -118,28 +125,39 @@ def get_email_content():
         title = info[0]
         abstract = info[1]
         url = info[2]
-        email_content += group_email_info(title, abstract, url)
+        keyword = info[3]
+        hotword = info[4]
+        email_content += group_email_info(title, abstract, url, keyword, hotword)
     return email_content
-
-
-# save_searched_content('成毅 骑行', '骑行', one_year_ago)
-subject = "%s" % str(int(round(time.time())))
-content = get_email_content()
-destination = 'soogicspider@yeah.net'
-send_email.send_mail(subject, content, destination)
 
 
 def get_keyword_list(file_path):
     words = []
     word_file = open(file_path)
     for line in word_file:
-        words.append(line.strip())
+        if line.strip() != "":
+            words.append(line.strip())
     return words
 
 
-# keywords = get_keyword_list('D:\workspace\python\scrapytutorial\doc\soogic\keywords')
-# hot_words = set(get_keyword_list('D:\workspace\python\scrapytutorial\doc\soogic\hotwords') + get_hot_start_list())
-#
-# for hotword in hot_words:
-#     for keyword in keywords:
-#         save_searched_content('%s %s' % (hotword, keyword), keyword, one_year_ago)
+def search_and_save():
+    keywords = get_keyword_list('D:\workspace\python\scrapytutorial\doc\soogic\keywords')
+    hot_words = set(get_keyword_list('D:\workspace\python\scrapytutorial\doc\soogic\hotwords') + get_hot_start_list())
+    for hot_word in hot_words:
+        for keyword in keywords:
+            save_searched_content(keyword, hot_word, one_year_ago)
+
+
+def send_email():
+    subject = "%s" % str(int(round(time.time())))
+    content = get_email_content()
+    destination = 'soogicspider@yeah.net'
+    try:
+        sender.send_mail(subject, content, destination)
+        print '%s send successfully :)' % subject
+    except Exception, err:
+        print err.message
+
+
+# search_and_save()
+send_email()
