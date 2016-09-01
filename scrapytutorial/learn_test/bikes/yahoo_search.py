@@ -19,10 +19,15 @@ def search_and_save():
             save_data(keyword, hot_word)
 
 
-def save_data(keyword, hot_word):
-    url = 'https://search.yahoo.com/search?p=%s %s' % (keyword, hot_word)
+def search_data(search_word):
+    url = 'https://search.yahoo.com/search?p=%s' % search_word
     response = requests.get(url, proxies=proxies)
     soup = BeautifulSoup(response.content, 'html.parser')
+    return soup
+
+
+def save_data(keyword, hot_word):
+    soup = search_data(keyword + " " + hot_word)
     results = soup.find("div", id='web').find_all("li")
     url_md5_list = sd.get_all_url_md5()
 
