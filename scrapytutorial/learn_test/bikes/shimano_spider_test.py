@@ -151,15 +151,21 @@ def get_series_url_list(url):
     for series in series_list:
         series_title = series.a.text.strip()
         series_product_list = series.ul.find_all("a")
-        print series_title
         product = {}
-        for product in series_product_list:
-            product[product.text.strip()] = html_url_to_json_url(product.get("href"))
+        for item in series_product_list:
+            product[item.text.strip()] = html_url_to_json_url(item.get("href"))
         category[series_title] = product
-        print product.text, html_url_to_json_url(product.get("href"))
-        print "\n"  # TODO: mask
+
         # save_url_list(url_list)
-    print json.dumps(category, ensure_ascii=False)
+    return category
 
 # TODO: Get all url list
-get_series_url_list(official_site)
+series = get_series_url_list(official_site)
+
+for series_title in series.keys():
+    print series_title
+    for category_title in series[series_title].keys():
+        category_url = series[series_title][category_title]
+        
+        print '\t %s %s' % (category_title, series[series_title][category_title])
+    print '\n'

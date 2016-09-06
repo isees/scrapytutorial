@@ -66,8 +66,7 @@ def get_all_url_md5():
         cnx.close()
 
 
-get_all_url_md5()
-
+# get_all_url_md5()
 # save('cc2c8c54686e5d6bf51d82f0ff83196d', 'afd790d5dc259b765f80e176268c5145', '第十三讲 ionic css布局介绍 - ionic 教程',
 #      '2016年8月18日 - 所以又看了一下其他的框架,比如:Lungo和QuoJS等,突然发现了一个目前比较先进的框架ionic,所以就拿来用用。目前文档比较少,有的也仅是翻译官网的,所以...',
 #      ' http://www.ithtw.com/1702.html', 0)
