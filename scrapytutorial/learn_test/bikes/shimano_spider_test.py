@@ -4,6 +4,9 @@ import requests
 import sys
 from bs4 import BeautifulSoup
 import ast
+import math
+import hashlib
+import shimano_data as sd
 
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -12,8 +15,8 @@ official_site = "http://www.shimano-china.com"
 official_site_en = "http://www.shimano.com"
 prefix = ".quickview.json"
 
-page_url = "http://www.shimano-china.com/content/sssc-bike/zh/home/components1/mountain/xtr-m9000.html"
 series_json_url = "http://www.shimano-china.com/content/sssc-bike/zh/home/components1/mountain/xtr-m9000/_jcr_content/results.updateresults.json?page=1"
+page_url = "http://www.shimano-china.com/content/sssc-bike/zh/home/components1/mountain/xtr-m9000.html"
 
 
 # detail_url = "http://www.shimano-china.com/content/sssc-bike/zh/home/components1/mountain/xtr-m9000/sl-m9000.quickview.json"
@@ -57,6 +60,7 @@ proxies = {
     "https": "http://127.0.0.1:1080"
 }
 
+shimano_source = 1
 
 def get_if_exist(json, name):
     if json:
@@ -97,9 +101,7 @@ def save_series(product_list_url):
             image_url = info['image'].split('.swimg')[0]
             specific_url = info['url']
             features = ast.literal_eval(json.dumps(info['features'], ensure_ascii=False))
-
             attributes = json.dumps(info['attributes'], ensure_ascii=False)
-            technology = json.dumps(info['technology'], ensure_ascii=False)
 
             print 'name>> %s' % name
             print 'model>> %s' % model
@@ -159,13 +161,86 @@ def get_series_url_list(url):
         # save_url_list(url_list)
     return category
 
-# TODO: Get all url list
-series = get_series_url_list(official_site)
 
-for series_title in series.keys():
-    print series_title
-    for category_title in series[series_title].keys():
-        category_url = series[series_title][category_title]
-        
-        print '\t %s %s' % (category_title, series[series_title][category_title])
-    print '\n'
+
+
+def get_series_items(fitting_class, fitting_series, url, current_index=1):
+    response = requests.get(url, headers=headers, proxies=proxies)
+    if response.status_code not in (200, 320):
+        return
+    info = json.loads(response.content, encoding='utf-8')
+    total_items = info['total']
+    total_page = int(math.ceil(float(total_items) / 12))
+    print total_items, total_page, current_index
+    if 'products' in info.keys():
+        products = info['products']
+        for product in products:
+            # id = product['id']
+            name = product['name']
+            name_md5 = hashlib.md5(name.encode('utf-8')).hexdigest()
+            fitting_model = get_if_exist(product['attributes'], '型号')
+            series = get_if_exist(product['attributes'], '系列')
+            if series is '':
+                series = fitting_series
+            image_standard = product['image']
+            image_url = None
+            if image_standard is not None:
+                image_url = image_standard.split('.swimg')[0]
+            detail_url = product['url']
+            features = json.dumps(product['features'], ensure_ascii=False)
+            features = features.replace('\\n', '')
+            features = features.replace('·', '•')
+            features = features.replace('器r', '器')
+
+            features = ast.literal_eval(features)
+            feature_list = split_array(features[0], "•")
+            features = json.dumps(feature_list, ensure_ascii=False)
+
+            # for feature in json.dumps(feature_list, ensure_ascii=False).split("\n"):
+            #     if feature.strip() is not '':
+            #         feature_list.append(feature.strip())
+
+            attributes = json.dumps(product['attributes'], ensure_ascii=False)
+
+            print name
+            print name_md5
+            print fitting_model
+            print series
+
+            print features
+            print attributes
+            print image_url
+            print image_standard
+            print detail_url
+
+            sd.save(shimano_source, name_md5, name, fitting_class, series, fitting_model, 'shimano', 'fitting', features,
+                    attributes, image_url, image_standard, detail_url)
+
+            print '\n'
+
+    if current_index < total_page:
+        current_index += 1
+        get_series_items(fitting_class, fitting_series, url, current_index)
+
+
+# TODO: Get all url list
+def get_series_info():
+    series = get_series_url_list(official_site)
+    for class_title in series.keys():
+        print class_title
+        for series_title in series[class_title].keys():
+            category_url = series[class_title][series_title]
+            print '\t %s %s' % (series_title, series[class_title][series_title])
+            get_series_items(class_title, series_title, category_url)
+        print '\n'
+
+
+get_series_info()
+
+# series_test_url = 'http://www.shimano.com/content/sssc-bike/zh/home/components1/mountain/deore-xt0/_jcr_content/results.updateresults.json'
+
+# test_url = 'http://www.shimano.com/content/sssc-bike/zh/home/components1/mountain/alivio-9-speed/_jcr_content/results.updateresults.json'
+
+# get_series_items(series_json_url)
+# get_series_items(series_test_url)
+# get_series_items('山地', 'Alivio 9速', test_url)
