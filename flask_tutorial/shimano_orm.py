@@ -43,6 +43,6 @@ class Shimano(Base):
 # session.add_all([double_handler, tough_handler])
 # session.commit()
 
-list = Shimano.query.filter(Shimano.id == 63)
-for u in list:
-    print u.id, u.name, u.name_md5
+# list = Shimano.query.filter(Shimano.id == 63)
+# for u in list:
+#     print u.id, u.name, u.name_md5
