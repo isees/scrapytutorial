@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+</head>
+<body>
+{% if name %}
+<h1>Hi {{name}}</h1>
+<div><a href="/logout">logout</a></div>
+{% else %}
+<h1>Hi there :)</h1>
+<div><a href="/login">login</a></div>
+{% endif %}
+</body>
+</html>

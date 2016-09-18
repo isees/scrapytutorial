@@ -21,9 +21,9 @@ def get_current_timestamp():
 def int_to_time(ten_digit_number):
     return datetime.datetime.fromtimestamp(ten_digit_number)
 
-
-date = int_to_time(1471536000)
-print '1471536000 >> %r' % date
+time_stamp = 1473407242
+date = int_to_time(time_stamp)
+print '%d >> %r' % (time_stamp, date)
 print 'Current timestamp >> %r' % get_current_timestamp()
 print 'Current time >> %r' % int_to_time(get_current_timestamp())
 print strftime("%a, %d %b %Y %H:%M:%S +0000", gmtime())
