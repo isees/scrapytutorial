@@ -6,12 +6,27 @@
 </head>
 <body>
 <div>
-    <img src="{{fitting_image_standard}}" />
+    <img src="{{fitting_image_standard}}"/>
 </div>
+<div>名称: {{name}}</div>
 <div>分类: {{fitting_class}}</div>
 <div>系列: {{fitting_series}}</div>
 <div>型号: {{fitting_model}}</div>
-<div>特色: {{fitting_features}}</div>
-<div>属性: {{fitting_attributes}}</div>
+<div>
+    <div>特色</div>
+    <ul>
+        {% for feature in fitting_features %}
+        <li>{{feature.decode('utf-8')}}</li>
+        {% endfor %}
+    </ul>
+</div>
+<div>
+    <span>属性</span>
+    <ul>
+        {% for key, value in fitting_attributes.items() %}
+        <li>{{key}}: {{value}}</li>
+        {% endfor %}
+    </ul>
+</div>
 </body>
 </html>

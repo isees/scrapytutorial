@@ -16,8 +16,12 @@ class Shimano(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String)
-    name_md5 = Column(String)
-
+    fitting_class = Column(String)
+    fitting_series = Column(String)
+    fitting_model = Column(String)
+    fitting_features = Column(String)
+    fitting_attributes = Column(String)
+    fitting_image_standard = Column(String)
 
 # # default
 # engine = create_engine('mysql://scott:tiger@localhost/foo')
